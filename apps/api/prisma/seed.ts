@@ -13,7 +13,7 @@ import type { InningsDto } from '@cmf/shared';
 import {
   DAY, teams, venues, tournaments, matches, broadcasters, rightsIN,
   type TeamKey, type VenueKey, type TournamentKey, type BroadcasterName,
-} from './seed-data';
+} from '../src/provider/mock/mock-data';
 
 const prisma = new PrismaClient();
 

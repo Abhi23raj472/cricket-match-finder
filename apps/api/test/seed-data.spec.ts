@@ -1,5 +1,5 @@
-import { MatchStatus } from '@prisma/client';
-import { teams, venues, tournaments, matches, broadcasters, rightsIN } from '../prisma/seed-data';
+import { MockStatus as MatchStatus } from '../src/provider/mock/mock-data';
+import { teams, venues, tournaments, matches, broadcasters, rightsIN } from '../src/provider/mock/mock-data';
 
 describe('seed data', () => {
   const teamKeys = new Set(teams.map((t) => t.key));

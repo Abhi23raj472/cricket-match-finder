@@ -94,6 +94,8 @@ export interface LiveScoreDto {
   status: MatchStatus;
   tossText?: string | null;
   innings: InningsDto[];
+  currentBatters: BattingLine[]; // at the crease, striker first
+  currentBowler?: BowlingLine | null;
   lastSixBalls: string[]; // e.g. ["1","4","W","0","6","1"]
   commentary: { over: string; text: string }[];
   updatedAt: string;

@@ -33,3 +33,16 @@ Other commands: `pnpm db:studio` (browse data), `pnpm db:reset` (drop, re-migrat
 
 The seed uses dates relative to when it runs, so re-run `pnpm db:seed` whenever you want the two live matches to be live again.
 All seeded tournaments, scores and broadcast rights are **sample data**, and the broadcaster links are placeholders to verify before launch.
+
+## Data provider and background jobs (Step 3)
+
+All cricket data comes through `CricketDataProvider` (`apps/api/src/provider/cricket-provider.interface.ts`).
+`CRICKET_PROVIDER=mock` (the default) uses a built-in mock that simulates live T20 matches ball by ball,
+so the whole app works without an API key.
+
+| Job | When | What it does |
+| --- | --- | --- |
+| Fixture sync | On startup and every 6 hours | Pulls fixtures from 7 days ago to 30 days ahead; upserts teams, venues, tournaments and matches by provider id. Never moves a match backwards (e.g. completed → live). |
+| Live poller | Every `LIVE_POLL_MS` (15 s) | For live matches, and upcoming ones past their start time: fetches the scorecard, saves `live_scores`, updates the match status/toss/result, and publishes to Redis (`cmf:live` channel, `cmf:live:<matchId>` cache). |
+
+Set `JOBS_ENABLED=false` to run an API instance without jobs. The SSE endpoint that streams these updates to apps comes in Step 4.

@@ -1,8 +1,14 @@
 /**
- * SAMPLE seed data (made-up tournaments, fixtures, scores and rights).
+ * SAMPLE data shared by the mock provider and the database seed (made-up tournaments, fixtures, scores and rights).
  * Dates are relative to when the seed runs, so the 2 live matches stay live.
  */
-import { MatchFormat, MatchStatus, BroadcasterType } from '@prisma/client';
+import type { BroadcasterType as TBroadcasterType, MatchFormat as TMatchFormat, MatchStatus as TMatchStatus } from '@cmf/shared';
+
+// String-literal enums so this file doesn't depend on the generated Prisma client.
+const MatchStatus = { upcoming: 'upcoming', live: 'live', completed: 'completed', abandoned: 'abandoned' } as const satisfies Record<TMatchStatus, TMatchStatus>;
+const MatchFormat = { T20: 'T20' } as const satisfies Partial<Record<TMatchFormat, TMatchFormat>>;
+const BroadcasterType = { OTT: 'OTT', TV: 'TV', FREE: 'FREE' } as const satisfies Record<TBroadcasterType, TBroadcasterType>;
+export { MatchStatus as MockStatus };
 
 export const HOUR = 60 * 60 * 1000;
 export const DAY = 24 * HOUR;
@@ -90,7 +96,7 @@ export interface SeedMatch {
   venue: VenueKey;
   matchNo: string;
   start: Date;
-  status: MatchStatus;
+  status: TMatchStatus;
   toss?: string;
   result?: string;
   innings?: SeedInnings[];

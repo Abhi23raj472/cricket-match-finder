@@ -3,15 +3,19 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { LIVE_BUS, InMemoryLiveBus } from '../src/live/live-bus';
 
 describe('GET /v1/health', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
+    process.env.JOBS_ENABLED = 'false'; // no background jobs in this test
     // Health check doesn't touch the database, so stub Prisma out.
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(PrismaService)
       .useValue({})
+      .overrideProvider(LIVE_BUS)
+      .useValue(new InMemoryLiveBus())
       .compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('v1');
