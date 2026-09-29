@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Cricket Match Finder",
+    "slug": "cricket-match-finder",
+    "scheme": "cmf",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router"],
+    "extra": { "apiUrl": "http://localhost:3000/v1" }
+  }
+}
