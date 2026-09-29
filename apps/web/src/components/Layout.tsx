@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { REGIONS } from '@cmf/shared';
 import { setPrefs, usePrefs } from '../prefs';
 import { zoneAbbrev } from '../format';
+import { DEMO } from '../api';
 
 export function Layout() {
   const prefs = usePrefs();
@@ -10,6 +11,11 @@ export function Layout() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
+      {DEMO && (
+        <div className="demo-banner" role="note">
+          <strong>Demo</strong> · Sample matches simulated in your browser, not real fixtures or scores. Broadcaster rights are examples for India.
+        </div>
+      )}
       <header className="site-header">
         <div className="container header-inner">
           <NavLink to="/" className="wordmark" aria-label="Match Finder home">
@@ -43,7 +49,7 @@ export function Layout() {
       </main>
       <footer className="site-footer">
         <div className="container footer-inner muted small">
-          <span>Times in {zoneAbbrev()}. Scores from a licensed data provider.</span>
+          <span>Times in {zoneAbbrev()}. {DEMO ? 'Demo data, simulated in your browser.' : 'Scores from a licensed data provider.'}</span>
           <span>We link to official broadcasters only.</span>
         </div>
       </footer>

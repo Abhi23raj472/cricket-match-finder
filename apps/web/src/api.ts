@@ -12,6 +12,8 @@ import { getPrefs } from './prefs';
 import { browserTimeZone } from './format';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '/v1';
+/** Demo build (GitHub Pages): no server, sample data simulated in the browser. */
+export const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 export class ApiError extends Error {
   constructor(
@@ -23,6 +25,15 @@ export class ApiError extends Error {
 }
 
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+  if (DEMO) {
+    const { demoServer, DemoNotFound } = await import('./demo/server');
+    try {
+      return (await demoServer().handle(path, getPrefs().region)) as T;
+    } catch (e) {
+      if (e instanceof DemoNotFound) throw new ApiError(404, "We couldn't find that page.");
+      throw e;
+    }
+  }
   let res: Response;
   try {
     res = await fetch(BASE + path, {
@@ -58,6 +69,19 @@ export const api = {
 
 /** Live score stream (browser EventSource). Returns a close function. */
 export function subscribeLive(matchId: string, onScore: (s: LiveScoreDto) => void, onStatus?: (open: boolean) => void): () => void {
+  if (DEMO) {
+    let unsub = () => {};
+    let cancelled = false;
+    import('./demo/server').then(({ demoServer }) => {
+      if (cancelled) return;
+      onStatus?.(true);
+      unsub = demoServer().subscribe(matchId, onScore);
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }
   if (typeof EventSource === 'undefined') return () => undefined;
   const es = new EventSource(`${BASE}/matches/${matchId}/live`);
   es.onopen = () => onStatus?.(true);

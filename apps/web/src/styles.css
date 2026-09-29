@@ -156,6 +156,18 @@ table td {
 
 /* ---------- Layout ---------- */
 
+.demo-banner {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.demo-banner strong {
+  color: var(--accent);
+}
+
 .container {
   width: 100%;
   max-width: var(--maxw);

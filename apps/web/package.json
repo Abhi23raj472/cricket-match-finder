@@ -8,7 +8,8 @@
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:pages": "VITE_DEMO=true VITE_BASE=/cricket-match-finder/ vite build && cp dist/index.html dist/404.html && touch dist/.nojekyll"
   },
   "dependencies": {
     "@cmf/shared": "workspace:*",

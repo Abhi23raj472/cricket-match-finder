@@ -124,3 +124,13 @@ set `VITE_API_URL` if the API lives on another origin.
 
 Clean, minimal design with automatic dark mode, keyboard-friendly (skip link, focus rings), respects reduced motion, and works from phone to desktop.
 Score helpers (score text, chase, run rate, watch-option ordering) live in `packages/shared` and are used by both the website and the mobile app.
+
+## Live demo (GitHub Pages)
+
+The website is published at **https://abhi23raj472.github.io/cricket-match-finder/** in demo mode: GitHub Pages only serves
+static files, so the demo runs the API's mock match simulation in the browser (one ball every 5 s) instead of calling a server.
+Everything on it is sample data, and a banner says so.
+
+- `.github/workflows/pages.yml` rebuilds and publishes it to the `gh-pages` branch on every push to `main` that touches the website.
+- Build it yourself: `pnpm --filter @cmf/web build:pages` (sets `VITE_DEMO=true` and the `/cricket-match-finder/` base path).
+- To show real data instead, host the API (e.g. Render, Railway, Fly.io with Postgres and Redis) and build without `VITE_DEMO`, with `VITE_API_URL=https://<your-api>/v1`.

@@ -1,0 +1,54 @@
+# Publishes the fan website (demo mode) to GitHub Pages on every push to main.
+# Demo mode runs the sample match simulation in the browser, so no API server is needed.
+name: Deploy website to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/shared/**'
+      - 'apps/api/src/provider/**'
+      - 'apps/api/src/matches/watch-options.ts'
+      - 'apps/api/src/tournaments/standings.ts'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write # push the built site to the gh-pages branch
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # version comes from "packageManager" in package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (website and what it depends on)
+        run: pnpm install --frozen-lockfile --filter "@cmf/web..."
+
+      - name: Test
+        run: pnpm --filter @cmf/web test
+
+      - name: Build demo site for /cricket-match-finder/
+        run: pnpm --filter @cmf/web build:pages
+
+      - name: Publish to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: apps/web/dist
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: 'Deploy website demo'
