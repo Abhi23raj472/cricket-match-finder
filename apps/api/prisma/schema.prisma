@@ -1,0 +1,302 @@
+// Cricket Match Finder — database schema
+// Tables and columns are snake_case in Postgres; models are PascalCase/camelCase in code.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum MatchStatus {
+  upcoming
+  live
+  completed
+  abandoned
+
+  @@map("match_status")
+}
+
+enum MatchFormat {
+  TEST
+  ODI
+  T20
+  T10
+  OTHER
+
+  @@map("match_format")
+}
+
+enum BroadcasterType {
+  OTT
+  TV
+  FREE
+
+  @@map("broadcaster_type")
+}
+
+enum AlertEvent {
+  toss
+  start
+  wicket
+  milestone
+  result
+
+  @@map("alert_event")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum AuthProvider {
+  PHONE_OTP
+  EMAIL_OTP
+
+  @@map("auth_provider")
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+
+  @@map("device_platform")
+}
+
+// ---------- Provider-sourced data (cricket API) ----------
+
+model Team {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  shortCode      String   @map("short_code") @db.VarChar(8)
+  country        String?
+  logoUrl        String?  @map("logo_url")
+  providerTeamId String   @unique @map("provider_team_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  homeMatches  Match[]         @relation("HomeTeam")
+  awayMatches  Match[]         @relation("AwayTeam")
+  favouritedBy FavouriteTeam[]
+  alertPrefs   AlertPref[]
+
+  @@map("teams")
+}
+
+model Tournament {
+  id               String      @id @default(uuid()) @db.Uuid
+  name             String
+  format           MatchFormat
+  season           String
+  startDate        DateTime    @map("start_date") @db.Date
+  endDate          DateTime    @map("end_date") @db.Date
+  providerSeriesId String      @unique @map("provider_series_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  matches         Match[]
+  broadcastRights BroadcastRight[]
+
+  @@index([startDate, endDate])
+  @@map("tournaments")
+}
+
+model Venue {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  city            String
+  country         String
+  timezone        String // IANA, e.g. "Asia/Kolkata"
+  providerVenueId String   @unique @map("provider_venue_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  matches Match[]
+
+  @@map("venues")
+}
+
+model Match {
+  id              String      @id @default(uuid()) @db.Uuid
+  tournamentId    String      @map("tournament_id") @db.Uuid
+  homeTeamId      String      @map("home_team_id") @db.Uuid
+  awayTeamId      String      @map("away_team_id") @db.Uuid
+  venueId         String      @map("venue_id") @db.Uuid
+  matchNo         String?     @map("match_no")
+  startTimeUtc    DateTime    @map("start_time_utc") @db.Timestamptz(3)
+  status          MatchStatus @default(upcoming)
+  tossText        String?     @map("toss_text")
+  resultText      String?     @map("result_text")
+  providerMatchId String      @unique @map("provider_match_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  tournament     Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeTeam       Team             @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam       Team             @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  venue          Venue            @relation(fields: [venueId], references: [id])
+  liveScore      LiveScore?
+  rightOverrides BroadcastRight[]
+  alertPrefs     AlertPref[]
+
+  @@index([status, startTimeUtc])
+  @@index([tournamentId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@map("matches")
+}
+
+/// One row per match: the latest scorecard snapshot from the provider.
+/// JSON shapes match InningsDto / LiveScoreDto in @cmf/shared.
+model LiveScore {
+  matchId        String   @id @map("match_id") @db.Uuid
+  innings        Json     @default("[]") // InningsDto[]
+  currentBatters Json     @default("[]") @map("current_batters") // BattingLine[]
+  currentBowler  Json?    @map("current_bowler") // BowlingLine | null
+  lastSixBalls   String[] @default([]) @map("last_6_balls")
+  commentary     Json     @default("[]") // { over, text }[] newest first
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@map("live_scores")
+}
+
+// ---------- Curated data (admin panel) ----------
+
+model Broadcaster {
+  id                  String          @id @default(uuid()) @db.Uuid
+  name                String          @unique
+  type                BroadcasterType
+  logoUrl             String?         @map("logo_url")
+  /// App deep link with placeholders, e.g. "app://match/{providerMatchId}"
+  appDeeplinkTemplate String?         @map("app_deeplink_template")
+  /// Web fallback with the same placeholders
+  webUrlTemplate      String?         @map("web_url_template")
+  affiliateUrl        String?         @map("affiliate_url")
+  isActive            Boolean         @default(true) @map("is_active")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+
+  rights      BroadcastRight[]
+  subscribers UserSubscription[]
+
+  @@map("broadcasters")
+}
+
+/// Who shows a tournament in a region. A row with matchId set applies to that
+/// single match and overrides the tournament-level rows for that region.
+model BroadcastRight {
+  id            String   @id @default(uuid()) @db.Uuid
+  broadcasterId String   @map("broadcaster_id") @db.Uuid
+  tournamentId  String   @map("tournament_id") @db.Uuid
+  matchId       String?  @map("match_id") @db.Uuid
+  regionCode    String   @map("region_code") @db.Char(2) // ISO 3166-1 alpha-2
+  language      String   @default("en") // BCP-47, e.g. "en", "hi"
+  isFree        Boolean  @default(false) @map("is_free")
+  validFrom     DateTime @map("valid_from") @db.Timestamptz(3)
+  validTo       DateTime @map("valid_to") @db.Timestamptz(3)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  broadcaster Broadcaster @relation(fields: [broadcasterId], references: [id], onDelete: Cascade)
+  tournament  Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  match       Match?      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  // Note: Postgres treats NULL match_id values as distinct, so duplicate
+  // tournament-level rows are also blocked in the admin API (Step 5).
+  @@unique([broadcasterId, tournamentId, matchId, regionCode, language])
+  @@index([tournamentId, regionCode])
+  @@index([matchId, regionCode])
+  @@map("broadcast_rights")
+}
+
+// ---------- Users ----------
+
+model User {
+  id           String       @id @default(uuid()) @db.Uuid
+  email        String?      @unique
+  phone        String?      @unique // E.164, e.g. "+919876543210"
+  authProvider AuthProvider @map("auth_provider")
+  role         UserRole     @default(USER)
+  regionCode   String       @default("IN") @map("region_code") @db.Char(2)
+  language     String       @default("en")
+  timezone     String       @default("Asia/Kolkata")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  subscriptions UserSubscription[]
+  favourites    FavouriteTeam[]
+  alertPrefs    AlertPref[]
+  devices       Device[]
+
+  @@map("users")
+}
+
+model UserSubscription {
+  userId        String   @map("user_id") @db.Uuid
+  broadcasterId String   @map("broadcaster_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  broadcaster Broadcaster @relation(fields: [broadcasterId], references: [id], onDelete: Cascade)
+
+  @@id([userId, broadcasterId])
+  @@map("user_subscriptions")
+}
+
+model FavouriteTeam {
+  userId    String   @map("user_id") @db.Uuid
+  teamId    String   @map("team_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@map("favourite_teams")
+}
+
+/// Alert preference for either one match or one team (exactly one is set;
+/// enforced by the API in Step 7).
+model AlertPref {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  matchId   String?      @map("match_id") @db.Uuid
+  teamId    String?      @map("team_id") @db.Uuid
+  events    AlertEvent[]
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match? @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team  Team?  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+  @@unique([userId, teamId])
+  @@index([matchId])
+  @@index([teamId])
+  @@map("alert_prefs")
+}
+
+model Device {
+  id        String         @id @default(uuid()) @db.Uuid
+  userId    String?        @map("user_id") @db.Uuid // guests can register for alerts later
+  pushToken String         @unique @map("push_token")
+  platform  DevicePlatform
+  lastSeen  DateTime       @default(now()) @map("last_seen")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("devices")
+}

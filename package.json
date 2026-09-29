@@ -10,7 +10,11 @@
     "dev:api": "pnpm --filter @cmf/api dev",
     "dev:admin": "pnpm --filter @cmf/admin dev",
     "dev:mobile": "pnpm --filter @cmf/mobile start",
-    "db:up": "docker compose up -d postgres redis"
+    "db:up": "docker compose up -d postgres redis",
+    "db:migrate": "pnpm --filter @cmf/api db:migrate",
+    "db:seed": "pnpm --filter @cmf/api db:seed",
+    "db:reset": "pnpm --filter @cmf/api db:reset",
+    "db:studio": "pnpm --filter @cmf/api db:studio"
   },
   "engines": {
     "node": ">=20"
