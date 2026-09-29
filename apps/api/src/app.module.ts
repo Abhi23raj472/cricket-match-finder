@@ -9,6 +9,7 @@ import { SyncModule } from './sync/sync.module';
 import { MatchesModule } from './matches/matches.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
 import { BroadcastersModule } from './broadcasters/broadcasters.controller';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { BroadcastersModule } from './broadcasters/broadcasters.controller';
     MatchesModule,
     TournamentsModule,
     BroadcastersModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

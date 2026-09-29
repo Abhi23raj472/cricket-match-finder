@@ -1,22 +1,49 @@
-import { useEffect, useState } from 'react';
-import { DEFAULT_REGION } from '@cmf/shared';
+import { useState } from 'react';
+import { adminKey } from './api';
+import { KeyGate } from './pages/KeyGate';
+import { BroadcastersPage } from './pages/BroadcastersPage';
+import { RightsPage } from './pages/RightsPage';
+import { GapsPage } from './pages/GapsPage';
+
+type Tab = 'broadcasters' | 'rights' | 'gaps';
+const TABS: [Tab, string][] = [
+  ['broadcasters', 'Broadcasters'],
+  ['rights', 'Rights'],
+  ['gaps', 'Gaps'],
+];
 
 export function App() {
-  const [health, setHealth] = useState<string>('checking…');
+  const [unlocked, setUnlocked] = useState(() => Boolean(adminKey.get()));
+  const [tab, setTab] = useState<Tab>('rights');
 
-  useEffect(() => {
-    fetch('/v1/health')
-      .then((r) => r.json())
-      .then((b) => setHealth(b.status))
-      .catch(() => setHealth('API not reachable'));
-  }, []);
+  if (!unlocked) return <KeyGate onUnlocked={() => setUnlocked(true)} />;
 
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: 24 }}>
-      <h1>Cricket Match Finder — Admin</h1>
-      <p>API status: {health}</p>
-      <p>Default region: {DEFAULT_REGION}</p>
-      <p>Broadcaster and rights management arrives in Step 5.</p>
-    </main>
+    <div className="shell">
+      <header className="top">
+        <span className="brand">Cricket Match Finder · Admin</span>
+        <nav aria-label="Sections">
+          {TABS.map(([id, label]) => (
+            <button key={id} className={tab === id ? 'tab active' : 'tab'} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
+              {label}
+            </button>
+          ))}
+        </nav>
+        <button
+          className="signout"
+          onClick={() => {
+            adminKey.clear();
+            setUnlocked(false);
+          }}
+        >
+          Lock
+        </button>
+      </header>
+      <main>
+        {tab === 'broadcasters' && <BroadcastersPage />}
+        {tab === 'rights' && <RightsPage />}
+        {tab === 'gaps' && <GapsPage onFix={() => setTab('rights')} />}
+      </main>
+    </div>
   );
 }

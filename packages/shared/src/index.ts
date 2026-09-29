@@ -153,3 +153,56 @@ export interface ApiErrorDto {
   message: string | string[];
   error?: string;
 }
+
+// ---------- Step 5: admin ----------
+
+export interface AdminBroadcasterDto extends BroadcasterDto {
+  appDeeplinkTemplate: string | null;
+  webUrlTemplate: string | null;
+  affiliateUrl: string | null;
+  isActive: boolean;
+  rightsCount: number;
+}
+
+export interface AdminBroadcasterInput {
+  name: string;
+  type: BroadcasterType;
+  logoUrl?: string | null;
+  appDeeplinkTemplate?: string | null;
+  webUrlTemplate?: string | null;
+  affiliateUrl?: string | null;
+  isActive?: boolean;
+}
+
+export interface AdminRightDto {
+  id: string;
+  broadcaster: { id: string; name: string };
+  tournament: { id: string; name: string };
+  match: { id: string; label: string; startTimeUtc: string } | null; // null = whole tournament
+  regionCode: string;
+  language: string;
+  isFree: boolean;
+  validFrom: string;
+  validTo: string;
+}
+
+export interface AdminRightInput {
+  broadcasterId: string;
+  tournamentId: string;
+  matchId?: string | null;
+  regionCode: string;
+  language: string;
+  isFree?: boolean;
+  /** Defaults to the tournament start date */
+  validFrom?: string;
+  /** Defaults to the end of the tournament end date */
+  validTo?: string;
+}
+
+export interface RightsGapDto {
+  match: { id: string; label: string; startTimeUtc: string; tournamentName: string };
+  regionCode: string;
+}
+
+/** Placeholders allowed in broadcaster link templates. */
+export const LINK_PLACEHOLDERS = ['matchId', 'providerMatchId'] as const;

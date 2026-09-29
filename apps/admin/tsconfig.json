@@ -4,9 +4,23 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "lib": ["ES2022", "DOM"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "noEmit": true,
-    "paths": { "@cmf/shared": ["../../packages/shared/src"] }
+    "paths": {
+      "@cmf/shared": [
+        "../../packages/shared/src"
+      ]
+    },
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "vitest.config.ts"
+  ]
 }

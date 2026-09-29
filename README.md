@@ -66,4 +66,21 @@ Rights apply when the match start time falls inside `valid_from`–`valid_to`.
 
 Try it: `curl -N http://localhost:3000/v1/matches?status=live` then `curl -N http://localhost:3000/v1/matches/<id>/live`.
 
-Auth (`/auth/*`), `/me/*` and admin endpoints come in Steps 5 and 7.
+Auth (`/auth/*`) and `/me/*` come in Step 7.
+
+## Admin panel (Step 5)
+
+1. Set `ADMIN_API_KEY` in `.env` (e.g. `openssl rand -hex 24`) and restart the API. With no key set, the admin API returns 503.
+2. `pnpm dev:admin` and open http://localhost:5173, then enter the key. It's kept only for the browser tab (session storage).
+
+| Tab | What you can do |
+| --- | --- |
+| Broadcasters | Add/edit name, type, web link, app deep link, logo, affiliate URL. Deactivate to hide; delete only when a broadcaster has no rights. |
+| Rights | Add who shows a tournament per country and language, for the whole tournament or one match (a single-match right replaces the tournament's rights for that match). Dates default to the tournament's dates. |
+| Gaps | Upcoming/live matches in the next 7/14/30 days with no way to watch in a country. The API also logs these daily at 09:00 IST. |
+
+Admin API (`X-Admin-Key` header required): `GET/POST /admin/broadcasters`, `PATCH/DELETE /admin/broadcasters/:id`,
+`GET/POST /admin/rights`, `PATCH/DELETE /admin/rights/:id`, `GET /admin/rights/gaps?days=14&region=IN`.
+Link templates may use `{matchId}` and `{providerMatchId}`; web links must be https.
+
+The admin key is a stopgap: Step 7 replaces it with sign-in for users whose role is ADMIN.
