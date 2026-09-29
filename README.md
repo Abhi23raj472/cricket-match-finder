@@ -60,6 +60,7 @@ Base URL `http://localhost:3000/v1`. Optional headers: `X-Region` (2-letter coun
 | GET | `/tournaments` | Current and upcoming (`?all=true` for all), with `matchCount` and `liveCount`. |
 | GET | `/tournaments/:id` | Tournament + points table (win 2, tie/no result 1, sorted by points then net run rate). Fixtures and results: `/matches?tournament=:id`. |
 | GET | `/broadcasters` | Active broadcasters for the "My subscriptions" picker. |
+| GET | `/teams` | All teams A–Z (favourite-team picker). |
 
 Broadcast rights: a right set for a specific match **replaces** the tournament-level rights for that match in that region.
 Rights apply when the match start time falls inside `valid_from`–`valid_to`.
@@ -84,3 +85,26 @@ Admin API (`X-Admin-Key` header required): `GET/POST /admin/broadcasters`, `PATC
 Link templates may use `{matchId}` and `{providerMatchId}`; web links must be https.
 
 The admin key is a stopgap: Step 7 replaces it with sign-in for users whose role is ADMIN.
+
+## Mobile app (Step 6)
+
+```bash
+pnpm dev:mobile            # then press a (Android), i (iOS) or scan the QR code with Expo Go
+```
+
+Point the app at your API with `EXPO_PUBLIC_API_URL` (the default `http://localhost:3000/v1` only works in a simulator on the same machine):
+
+| Where the app runs | EXPO_PUBLIC_API_URL |
+| --- | --- |
+| iOS simulator | `http://localhost:3000/v1` |
+| Android emulator | `http://10.0.2.2:3000/v1` |
+| Your phone (same Wi-Fi) | `http://<your computer's LAN IP>:3000/v1` |
+
+Example: `EXPO_PUBLIC_API_URL=http://192.168.1.20:3000/v1 pnpm dev:mobile`. Also works in a browser: `pnpm --filter @cmf/mobile exec expo start --web`.
+
+Screens: onboarding (country, subscriptions, favourite teams; skippable) → Matches (Live / Upcoming / Results, filter by favourite team or tournament) →
+match detail (live scorecard over SSE, chase equation, batters at the crease, last 6 balls, commentary) → Watch on (official options for your country,
+your subscriptions first; opens the broadcaster's app or falls back to its website) · Tournaments → tournament page (fixtures, points table, results) · Profile.
+
+Preferences live on the phone (AsyncStorage) until sign-in arrives in Step 7. Times use the phone's time zone (Asia/Kolkata if unknown).
+Deep link `cmf://match/<id>` opens a match (used by push alerts in Step 7).

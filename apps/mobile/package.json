@@ -7,22 +7,50 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
   },
   "dependencies": {
     "@cmf/shared": "workspace:*",
+    "@expo/metro-runtime": "~3.2.3",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "expo": "~51.0.0",
     "expo-constants": "~16.0.0",
     "expo-linking": "~6.3.0",
     "expo-router": "~3.5.0",
     "expo-status-bar": "~1.12.0",
     "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-native": "0.74.5",
     "react-native-safe-area-context": "4.10.5",
-    "react-native-screens": "3.31.1"
+    "react-native-screens": "3.31.1",
+    "react-native-web": "~0.19.13",
+    "@expo/vector-icons": "^14.0.3",
+    "@react-navigation/native": "^6.1.18"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^12.9.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~18.2.79",
-    "typescript": "^5.6.0"
+    "jest": "^29.7.0",
+    "jest-expo": "~51.0.4",
+    "react-test-renderer": "18.2.0",
+    "typescript": "^5.6.0",
+    "babel-preset-expo": "~11.0.15"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "setupFiles": [
+      "./jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "^@cmf/shared$": "<rootDir>/../../packages/shared/src"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-async-storage|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|react-native-svg))"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }

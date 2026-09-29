@@ -77,6 +77,7 @@ function createPrismaMock() {
           : null,
       ),
     },
+    team: { findMany: jest.fn().mockResolvedValue([AUS, IND]) },
     broadcaster: {
       findMany: jest.fn().mockResolvedValue([
         { id: 'b2', name: 'DD Sports', type: 'FREE', logoUrl: null },
@@ -287,6 +288,14 @@ describe('API v1 (e2e)', () => {
 
     it('404s for an unknown tournament', async () => {
       await request(app.getHttpServer()).get(`/v1/tournaments/${MISSING}`).expect(404);
+    });
+  });
+
+  describe('GET /v1/teams', () => {
+    it('lists teams A-Z', async () => {
+      const res = await request(app.getHttpServer()).get('/v1/teams').expect(200);
+      expect(res.body.map((t: any) => t.name)).toEqual(['Australia', 'India']);
+      expect(prisma.team.findMany.mock.calls[0][0].orderBy).toEqual({ name: 'asc' });
     });
   });
 

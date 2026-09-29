@@ -6,7 +6,15 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "plugins": ["expo-router"],
-    "extra": { "apiUrl": "http://localhost:3000/v1" }
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3000/v1"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
   }
 }
