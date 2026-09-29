@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.28.0",
   "scripts": {
-    "build": "pnpm -r --filter ./packages/** --filter ./apps/api --filter ./apps/admin run build",
+    "build": "pnpm -r --filter ./packages/** --filter ./apps/api --filter ./apps/admin --filter ./apps/web run build",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck",
     "dev:api": "pnpm --filter @cmf/api dev",
@@ -14,7 +14,8 @@
     "db:migrate": "pnpm --filter @cmf/api db:migrate",
     "db:seed": "pnpm --filter @cmf/api db:seed",
     "db:reset": "pnpm --filter @cmf/api db:reset",
-    "db:studio": "pnpm --filter @cmf/api db:studio"
+    "db:studio": "pnpm --filter @cmf/api db:studio",
+    "dev:web": "pnpm --filter @cmf/web dev"
   },
   "engines": {
     "node": ">=20"

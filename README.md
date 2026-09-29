@@ -10,11 +10,12 @@ cp .env.example .env
 pnpm --filter @cmf/shared build
 pnpm dev:api      # http://localhost:3000/v1/health
 pnpm dev:admin    # http://localhost:5173
+pnpm dev:web      # http://localhost:5174  (fan website)
 pnpm dev:mobile   # Expo dev server
 pnpm test
 ```
 
-Layout: `apps/api` (NestJS), `apps/admin` (React + Vite), `apps/mobile` (Expo), `packages/shared` (shared TypeScript types).
+Layout: `apps/api` (NestJS), `apps/web` (fan website, React + Vite), `apps/admin` (React + Vite), `apps/mobile` (Expo), `packages/shared` (shared types and cricket helpers).
 
 ## Database (Step 2)
 
@@ -108,3 +109,18 @@ your subscriptions first; opens the broadcaster's app or falls back to its websi
 
 Preferences live on the phone (AsyncStorage) until sign-in arrives in Step 7. Times use the phone's time zone (Asia/Kolkata if unknown).
 Deep link `cmf://match/<id>` opens a match (used by push alerts in Step 7).
+
+## Fan website (`apps/web`)
+
+`pnpm dev:web` → http://localhost:5174 (proxies `/v1` to the API on port 3000). Build with `pnpm --filter @cmf/web build`;
+set `VITE_API_URL` if the API lives on another origin.
+
+| Page | What's on it |
+| --- | --- |
+| `/` | Live now (cards, refresh every 30 s), Coming up (grouped by day), Recent results; filter by tournament |
+| `/match/:id` | Scoreboard with chase and run rate, Where to watch (your subscriptions first, links open the broadcaster in a new tab), at the crease, last 6 balls, scorecard per innings, commentary; live updates over SSE |
+| `/tournaments`, `/tournaments/:id` | Current series; fixtures, points table, results |
+| `/preferences` | Country and the apps you pay for (saved in the browser) |
+
+Clean, minimal design with automatic dark mode, keyboard-friendly (skip link, focus rings), respects reduced motion, and works from phone to desktop.
+Score helpers (score text, chase, run rate, watch-option ordering) live in `packages/shared` and are used by both the website and the mobile app.

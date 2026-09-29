@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEZONE, type InningsDto, type MatchSummaryDto, type ShortScore, type TeamDto } from '@cmf/shared';
+import { DEFAULT_TIMEZONE } from '@cmf/shared';
 
 /** The phone's time zone, or Asia/Kolkata if it can't be read. */
 export function deviceTimeZone(): string {
@@ -30,32 +30,4 @@ export function formatTime(iso: string, tz = deviceTimeZone()): string {
 /** "Today, 7:30 pm" */
 export const formatWhen = (iso: string, tz = deviceTimeZone(), now = new Date()) => `${formatDay(iso, tz, now)}, ${formatTime(iso, tz)}`;
 
-/** "186/5 (20.0)"; all out shows just runs. */
-export function scoreText(s: Pick<ShortScore, 'runs' | 'wickets' | 'overs'>): string {
-  const total = s.wickets >= 10 ? `${s.runs}` : `${s.runs}/${s.wickets}`;
-  return `${total} (${s.overs})`;
-}
-
-/** Latest score for a team in a match, or null if it hasn't batted. */
-export function teamScore(match: Pick<MatchSummaryDto, 'scores'>, team: TeamDto): ShortScore | null {
-  const all = match.scores.filter((s) => s.teamId === team.id);
-  return all.at(-1) ?? null;
-}
-
-/** e.g. "India need 42 runs from 30 balls" while chasing, else null. */
-export function chaseText(innings: InningsDto[], teamName: (id: string) => string, quotaOvers = 20): string | null {
-  if (innings.length !== 2) return null;
-  const [first, second] = innings;
-  const need = first.runs + 1 - second.runs;
-  const [o, b = '0'] = second.overs.split('.');
-  const ballsLeft = quotaOvers * 6 - (Number(o) * 6 + Number(b));
-  if (need <= 0 || ballsLeft <= 0 || second.wickets >= 10) return null;
-  return `${teamName(second.battingTeamId)} need ${need} run${need === 1 ? '' : 's'} from ${ballsLeft} ball${ballsLeft === 1 ? '' : 's'}`;
-}
-
-export const strikeRate = (runs: number, balls: number) => (balls ? ((runs / balls) * 100).toFixed(1) : '-');
-export function economy(runs: number, overs: string) {
-  const [o, b = '0'] = overs.split('.');
-  const balls = Number(o) * 6 + Number(b);
-  return balls ? ((runs / balls) * 6).toFixed(2) : '-';
-}
+export { scoreText, teamScore, chaseText, strikeRate, economy } from '@cmf/shared';

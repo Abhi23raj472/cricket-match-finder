@@ -206,3 +206,4 @@ export interface RightsGapDto {
 
 /** Placeholders allowed in broadcaster link templates. */
 export const LINK_PLACEHOLDERS = ['matchId', 'providerMatchId'] as const;
+export * from './cricket';

@@ -1,19 +1,8 @@
 import { Linking } from 'react-native';
-import type { WatchOptionDto } from '@cmf/shared';
+import { sortWatchOptions, type WatchOptionDto } from '@cmf/shared';
 
 /** Server order plus the user's locally saved subscriptions (guests). */
-export function withLocalSubscriptions(options: WatchOptionDto[], subscribed: string[]): WatchOptionDto[] {
-  const mine = new Set(subscribed);
-  return options
-    .map((o) => ({ ...o, isSubscribed: o.isSubscribed || mine.has(o.broadcasterId) }))
-    .sort(
-      (a, b) =>
-        Number(b.isSubscribed) - Number(a.isSubscribed) ||
-        Number(b.isFree) - Number(a.isFree) ||
-        a.name.localeCompare(b.name) ||
-        a.language.localeCompare(b.language),
-    );
-}
+export const withLocalSubscriptions = (options: WatchOptionDto[], subscribed: string[]) => sortWatchOptions(options, subscribed);
 
 export type OpenResult = 'app' | 'web' | 'none';
 
@@ -38,7 +27,4 @@ export async function openWatchOption(o: WatchOptionDto, linking: Pick<typeof Li
   return 'none';
 }
 
-export const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English', hi: 'Hindi', ta: 'Tamil', te: 'Telugu', kn: 'Kannada', bn: 'Bengali', mr: 'Marathi', ml: 'Malayalam',
-};
-export const languageName = (code: string) => LANGUAGE_NAMES[code] ?? code;
+export { LANGUAGE_NAMES, languageName } from '@cmf/shared';

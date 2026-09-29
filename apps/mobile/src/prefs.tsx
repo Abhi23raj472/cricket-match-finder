@@ -90,17 +90,4 @@ export function usePrefs(): PrefsContext {
 }
 
 /** Countries offered in onboarding and settings. */
-export const REGIONS: { code: string; name: string }[] = [
-  { code: 'IN', name: 'India' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'US', name: 'United States' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'AE', name: 'United Arab Emirates' },
-  { code: 'NZ', name: 'New Zealand' },
-  { code: 'ZA', name: 'South Africa' },
-  { code: 'PK', name: 'Pakistan' },
-  { code: 'BD', name: 'Bangladesh' },
-  { code: 'LK', name: 'Sri Lanka' },
-  { code: 'SG', name: 'Singapore' },
-];
+export { REGIONS } from '@cmf/shared';
