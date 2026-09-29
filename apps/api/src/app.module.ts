@@ -6,6 +6,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProviderModule } from './provider/provider.module';
 import { LiveModule } from './live/live.module';
 import { SyncModule } from './sync/sync.module';
+import { MatchesModule } from './matches/matches.module';
+import { TournamentsModule } from './tournaments/tournaments.module';
+import { BroadcastersModule } from './broadcasters/broadcasters.controller';
 
 @Module({
   imports: [
@@ -15,6 +18,9 @@ import { SyncModule } from './sync/sync.module';
     ProviderModule,
     LiveModule,
     SyncModule,
+    MatchesModule,
+    TournamentsModule,
+    BroadcastersModule,
   ],
   controllers: [HealthController],
 })

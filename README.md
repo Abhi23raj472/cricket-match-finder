@@ -45,4 +45,25 @@ so the whole app works without an API key.
 | Fixture sync | On startup and every 6 hours | Pulls fixtures from 7 days ago to 30 days ahead; upserts teams, venues, tournaments and matches by provider id. Never moves a match backwards (e.g. completed → live). |
 | Live poller | Every `LIVE_POLL_MS` (15 s) | For live matches, and upcoming ones past their start time: fetches the scorecard, saves `live_scores`, updates the match status/toss/result, and publishes to Redis (`cmf:live` channel, `cmf:live:<matchId>` cache). |
 
-Set `JOBS_ENABLED=false` to run an API instance without jobs. The SSE endpoint that streams these updates to apps comes in Step 4.
+Set `JOBS_ENABLED=false` to run an API instance without jobs.
+
+## API v1 (Step 4)
+
+Base URL `http://localhost:3000/v1`. Optional headers: `X-Region` (2-letter country, default `IN`) and
+`X-Timezone` (IANA, default `Asia/Kolkata`). Invalid input returns `400` with a list of messages; unknown fields are rejected.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/matches` | Query: `status` (upcoming/live/completed/abandoned), `tournament`, `team` (UUIDs), `date` (YYYY-MM-DD in `X-Timezone`), `page` (default 1), `pageSize` (1–100, default 20). Results are newest first; everything else soonest first. |
+| GET | `/matches/:id` | Match + live scorecard + `watchOptions` for `X-Region`, ordered: your subscriptions, then free, then A–Z. |
+| GET | `/matches/:id/live` | Server-Sent Events: `score` event with the current scorecard, then one per update; `ping` every 25 s; closes after the result. |
+| GET | `/tournaments` | Current and upcoming (`?all=true` for all), with `matchCount` and `liveCount`. |
+| GET | `/tournaments/:id` | Tournament + points table (win 2, tie/no result 1, sorted by points then net run rate). Fixtures and results: `/matches?tournament=:id`. |
+| GET | `/broadcasters` | Active broadcasters for the "My subscriptions" picker. |
+
+Broadcast rights: a right set for a specific match **replaces** the tournament-level rights for that match in that region.
+Rights apply when the match start time falls inside `valid_from`–`valid_to`.
+
+Try it: `curl -N http://localhost:3000/v1/matches?status=live` then `curl -N http://localhost:3000/v1/matches/<id>/live`.
+
+Auth (`/auth/*`), `/me/*` and admin endpoints come in Steps 5 and 7.

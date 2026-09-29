@@ -115,3 +115,41 @@ export interface Paginated<T> {
 
 export const DEFAULT_REGION = 'IN';
 export const DEFAULT_TIMEZONE = 'Asia/Kolkata';
+
+// ---------- Step 4: API responses ----------
+
+export interface BroadcasterDto {
+  id: string;
+  name: string;
+  type: BroadcasterType;
+  logoUrl?: string | null;
+}
+
+export interface TournamentListItemDto extends TournamentDto {
+  matchCount: number;
+  liveCount: number;
+}
+
+export interface StandingRowDto {
+  team: TeamDto;
+  played: number;
+  won: number;
+  lost: number;
+  tied: number;
+  noResult: number;
+  points: number;
+  netRunRate: number; // rounded to 3 decimals
+}
+
+export interface TournamentDetailDto extends TournamentDto {
+  standings: StandingRowDto[];
+}
+
+/** Server-Sent Events on GET /v1/matches/:id/live */
+export type LiveEventType = 'score' | 'ping';
+
+export interface ApiErrorDto {
+  statusCode: number;
+  message: string | string[];
+  error?: string;
+}

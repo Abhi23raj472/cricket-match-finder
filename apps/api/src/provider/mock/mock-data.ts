@@ -199,7 +199,8 @@ export const rightsIN: SeedRight[] = [
   { broadcaster: 'JioHotstar', tournament: 'quad', language: 'hi', isFree: false },
   { broadcaster: 'DD Sports', tournament: 'quad', language: 'hi', isFree: true },
   { broadcaster: 'FanCode', tournament: 'trophy', language: 'en', isFree: false },
-  // Override example: the domestic match in Mohali also streams on SonyLIV
+  // Match-level override: Punjab v Delhi is on SonyLIV INSTEAD of FanCode
+  // (match-level rows replace the tournament-level rows for that match)
   { broadcaster: 'SonyLIV', tournament: 'trophy', matchKey: 'trophy-4', language: 'en', isFree: false },
 ];
 
